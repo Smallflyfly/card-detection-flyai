@@ -2,13 +2,16 @@
 import argparse
 import os
 
+import torch
 from flyai.data_helper import DataHelper
 from flyai.framework import FlyAI
+from torch.backends import cudnn
+from torch.utils.data import DataLoader
 
 from dataset import CarDataset
 from path import MODEL_PATH
 from model.faster_rcnn import fasterRCNN
-from utils.utils import load_pretrained_weights
+from utils.utils import load_pretrained_weights, build_optimizer, build_scheduler
 
 '''
 此项目为FlyAI2.0新版本框架，数据读取，评估方式与之前不同
@@ -54,12 +57,34 @@ class Main(FlyAI):
         :return:
         '''
         dataset = CarDataset()
-        fang[-1]
         # 24 + 1
         model = fasterRCNN(num_classes=25)
         load_pretrained_weights(model, './weights/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
-        print(model)
-
+        # print(model)
+        model = model.cuda()
+        model.train()
+        optimizer = build_optimizer(model, optim='sgd')
+        max_epoch = args.EPOCHS
+        batch_size = args.BATCH
+        scheduler = build_scheduler(optimizer, lr_scheduler='cosine', max_epoch=max_epoch)
+        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+        cudnn.benchmark = True
+        for epoch in range(max_epoch):
+            for index, data in enumerate(train_loader):
+                print(data)
+                im, cls_label, bbox_label = data
+                targets = []
+                for i in range(len(im)):
+                    print(cls_label[i])
+                    print(bbox_label[i])
+                    d = {}
+                    d['labels'] = torch.Tensor(cls_label[i])
+                    d['boxes'] = torch.Tensor(bbox_label[i])
+                    targets.append(d)
+                print(targets)
+                out = model(im, targets)
+                print(out)
+                fang[-1]
 
 if __name__ == '__main__':
     main = Main()
