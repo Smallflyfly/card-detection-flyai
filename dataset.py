@@ -10,6 +10,7 @@ import pandas
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
+import numpy as np
 
 from path import DATA_PATH
 
@@ -27,6 +28,8 @@ class CarDataset(Dataset):
         self.greek_nums_map = {}
         self.train_image_label_map = {}
         self.transforms = transforms.Compose([transforms.ToTensor()])
+        self.image_size = 640
+
 
         self._generate_greek_nums_map()
         self._process_data()
@@ -74,11 +77,19 @@ class CarDataset(Dataset):
         bbox_label = self.train_bbox_labels[index]
         im = Image.open(image)
         w, h = im.size
-        # resize --> 800 * 1280
-        print(image)
-        print(w, h)
-        fang[-1]
-        im = self.transforms(im)
+        im_size_max = max(w, h)
+        im_scale = self.image_size / im_size_max
+        new_w = int(w * im_scale)
+        new_h = int(h * im_scale)
+        new_im = np.zeros((640, 640, 3)).astype(int)
+        im_resize = im.resize((new_w, new_h))
+        print(new_w, new_h)
+        assert new_w != 640 or new_h != 640
+        new_im[:new_h, :new_w, :] = np.asarray(im_resize)[:, :, :]
+        new_im = Image.fromarray(np.uint8(new_im))
+        # new_im.show()
+        im = self.transforms(new_im)
+        print(im.size())
         return im, class_label, bbox_label
 
     def __len__(self):

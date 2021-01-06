@@ -51,6 +51,12 @@ class Main(FlyAI):
         '''
         pass
 
+    def my_collate(self, batch):
+        data = [item[0] for item in batch]
+        cls_label = [item[1] for item in batch]
+        bbox_label = [item[2] for item in batch]
+        return [data, cls_label, bbox_label]
+
     def train(self):
         '''
         训练模型，必须实现此方法
@@ -60,29 +66,29 @@ class Main(FlyAI):
         # 24 + 1
         model = fasterRCNN(num_classes=25)
         load_pretrained_weights(model, './weights/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
-        # print(model)
         model = model.cuda()
         model.train()
         optimizer = build_optimizer(model, optim='sgd')
         max_epoch = args.EPOCHS
         batch_size = args.BATCH
         scheduler = build_scheduler(optimizer, lr_scheduler='cosine', max_epoch=max_epoch)
-        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, collate_fn=self.my_collate)
         cudnn.benchmark = True
         for epoch in range(max_epoch):
             for index, data in enumerate(train_loader):
-                print(data)
-                im, cls_label, bbox_label = data
+                ims, cls_labels, bbox_labels = data
                 targets = []
-                for i in range(len(im)):
-                    print(cls_label[i])
-                    print(bbox_label[i])
+                for i in range(len(ims)):
+                    print(cls_labels[i])
                     d = {}
-                    d['labels'] = torch.Tensor(cls_label[i])
-                    d['boxes'] = torch.Tensor(bbox_label[i])
+                    d['labels'] = torch.tensor(cls_labels[i], dtype=torch.long).cuda()
+                    d['boxes'] = torch.tensor(bbox_labels[i], dtype=torch.long).cuda()
                     targets.append(d)
+
+                ims = torch.tensor([im.cpu().detach().numpy() for im in ims])
                 print(targets)
-                out = model(im, targets)
+                ims = ims.cuda()
+                out = model(ims, targets)
                 print(out)
                 fang[-1]
 
