@@ -83,7 +83,7 @@ class CarDataset(Dataset):
         new_w = int(w * im_scale)
         new_h = int(h * im_scale)
         new_im = np.zeros((640, 640, 3)).astype(int)
-        im_resize = im.resize((new_w, new_h))
+        im_resize = im.resize((new_w, new_h), Image.ANTIALIAS)
         # print(new_w, new_h)
         assert new_w != 640 or new_h != 640
         new_im[:new_h, :new_w, :] = np.asarray(im_resize)[:, :, :]
