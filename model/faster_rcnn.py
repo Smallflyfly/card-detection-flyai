@@ -8,6 +8,6 @@ import torch
 import torchvision
 
 
-def fasterRCNN(num_classes=100):
+def fasterRCNN(num_classes=25):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(num_classes=num_classes)
     return model

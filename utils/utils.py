@@ -8,7 +8,9 @@ import pickle
 from collections import OrderedDict
 from functools import partial
 
+import cv2
 import torch
+import numpy as np
 
 
 def load_checkpoint(weight_path):
@@ -121,3 +123,17 @@ def build_scheduler(optimizer, lr_scheduler='single_step', stepsize=1, gamma=0.1
             optimizer, float(max_epoch))
 
     return scheduler
+
+
+def show_image(im, bboxes):
+    # im PIL -> opencv
+    im = cv2.cvtColor(np.asarray(im), cv2.COLOR_RGB2BGR)
+    for bbox in bboxes:
+        xmin, ymin, xmax, ymax = bbox[:]
+        print(xmin, ymin, xmax, ymax)
+        cv2.rectangle(im, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (255, 255, 0), 1)
+
+    cv2.imshow('im', im)
+
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

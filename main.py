@@ -68,6 +68,7 @@ class Main(FlyAI):
         load_pretrained_weights(model, './weights/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
         model = model.cuda()
         model.train()
+        # fang[-1]
         optimizer = build_optimizer(model, optim='sgd')
         max_epoch = args.EPOCHS
         batch_size = args.BATCH
@@ -79,18 +80,30 @@ class Main(FlyAI):
                 ims, cls_labels, bbox_labels = data
                 targets = []
                 for i in range(len(ims)):
-                    print(cls_labels[i])
                     d = {}
                     d['labels'] = torch.tensor(cls_labels[i], dtype=torch.long).cuda()
                     d['boxes'] = torch.tensor(bbox_labels[i], dtype=torch.long).cuda()
                     targets.append(d)
-
                 ims = torch.tensor([im.cpu().detach().numpy() for im in ims])
-                print(targets)
                 ims = ims.cuda()
                 out = model(ims, targets)
-                print(out)
-                fang[-1]
+                loss_classifier = out['loss_classifier']
+                loss_box_reg = out['loss_box_reg']
+                loss_objectness = out['loss_objectness']
+                loss_rpn_box_reg = out['loss_rpn_box_reg']
+                loss = loss_classifier + loss_box_reg + loss_objectness + loss_rpn_box_reg
+                loss.backward()
+                optimizer.step()
+                if index % 10 == 0:
+                    print("Epoch: [{}/{}][{}/{}]  Loss: loss_classifier: {:.2f}, "
+                          "loss_box_reg: {:.2f}, loss_objectness: {:.2f}, "
+                          "loss_rpn_box_reg: {:.2f}, total loss: {:.2f}"
+                          .format(epoch+1, max_epoch, index+1, len(train_loader), loss_classifier,
+                                  loss_box_reg, loss_objectness, loss_rpn_box_reg, loss))
+                    # n_iter = epoch*len(train_loader) + index
+                    # writer.add_scalar('loss', loss, n_iter)
+            scheduler.step()
+
 
 if __name__ == '__main__':
     main = Main()

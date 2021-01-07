@@ -13,6 +13,7 @@ from torchvision import transforms
 import numpy as np
 
 from path import DATA_PATH
+from utils.utils import show_image
 
 
 class CarDataset(Dataset):
@@ -83,14 +84,21 @@ class CarDataset(Dataset):
         new_h = int(h * im_scale)
         new_im = np.zeros((640, 640, 3)).astype(int)
         im_resize = im.resize((new_w, new_h))
-        print(new_w, new_h)
+        # print(new_w, new_h)
         assert new_w != 640 or new_h != 640
         new_im[:new_h, :new_w, :] = np.asarray(im_resize)[:, :, :]
         new_im = Image.fromarray(np.uint8(new_im))
+        new_bboxes = []
+        for i in range(len(bbox_label)):
+            bboxes = [bb * im_scale for bb in bbox_label[i]]
+            new_bboxes.append(bboxes)
+        # print(image, im_scale)
+        # show_image(new_im, new_bboxes)
         # new_im.show()
+        # fang[-1]
         im = self.transforms(new_im)
-        print(im.size())
-        return im, class_label, bbox_label
+        # print(im.size())
+        return im, class_label, new_bboxes
 
     def __len__(self):
         return len(self.train_images)
