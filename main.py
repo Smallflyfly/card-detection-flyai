@@ -65,11 +65,11 @@ class Main(FlyAI):
         dataset = CarDataset()
         # 24 + 1
         model = fasterRCNN(num_classes=25)
-        load_pretrained_weights(model, './weights/fasterrcnn_resnet50_fpn_coco-258fb6c6.pth')
+        load_pretrained_weights(model, './weights/resnet50-19c8e357.pth')
         model = model.cuda()
         model.train()
         # fang[-1]
-        optimizer = build_optimizer(model, optim='sgd')
+        optimizer = build_optimizer(model, optim='adam')
         max_epoch = args.EPOCHS
         batch_size = args.BATCH
         scheduler = build_scheduler(optimizer, lr_scheduler='cosine', max_epoch=max_epoch)
@@ -91,7 +91,7 @@ class Main(FlyAI):
                 loss_box_reg = out['loss_box_reg']
                 loss_objectness = out['loss_objectness']
                 loss_rpn_box_reg = out['loss_rpn_box_reg']
-                loss = loss_classifier + loss_box_reg + loss_objectness + loss_rpn_box_reg
+                loss = 0.5*loss_classifier + 5*loss_box_reg + loss_objectness + 10*loss_rpn_box_reg
                 loss.backward()
                 optimizer.step()
                 if index % 10 == 0:
@@ -104,9 +104,11 @@ class Main(FlyAI):
                     # writer.add_scalar('loss', loss, n_iter)
             scheduler.step()
 
+        torch.save(model, 'last.pth')
+
 
 if __name__ == '__main__':
     main = Main()
-    # main.download_data()
+    main.download_data()
     main.train()
 
