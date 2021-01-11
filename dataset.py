@@ -110,7 +110,7 @@ class CarDataset(Dataset):
                 bboxes = [640.0 - b for b in bboxes]
                 new_flip_bboxes.append(bboxes)
             new_bboxes = new_flip_bboxes
-        new_im.show()
+        show_image(new_im, new_bboxes)
         fang[-1]
         im = self.transforms(new_im)
         # print(im.size())
