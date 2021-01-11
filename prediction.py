@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*
+from PIL import Image
 from flyai.framework import FlyAI
 import os
 
@@ -31,30 +32,51 @@ class Prediction(FlyAI):
         model = model.cuda()
         model.eval()
         dataset = CarDataset()
-        test_dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
-        for index, data in enumerate(test_dataloader):
-            im, cls_label, gt_bbox = data
-            im = im.cuda()
-            out = model(im, None)[0]
-            bboxes_pred = out['boxes']
-            labels_pred = out['labels']
-            scores_pred = out['scores']
-            bboxes_pred = bboxes_pred.tolist()
-            # bboxes_pred = [bbox.tolist() for bbox in bboxes_pred]
-            pred_result = []
-            for index, bbox in enumerate(bboxes_pred):
-                d = {}
-                d["image_name"] = image_name
-                label = labels_pred[index].cpu().detach().numpy()
-                # print(label)
-                # print(dataset.greek_nums_index_map)
-                label_name = dataset.greek_nums_index_map[str(label)]
-                d['label_name'] = label_name
-                xmin, ymin, xmax, ymax = bbox[:]
-                d['bbox'] = [int(xmin), int(ymin), int(xmax-xmin+1), int(ymax-ymin+1)]
-                score = scores_pred[index].cpu().detach().numpy()
-                d['confidence'] = score
-                pred_result.append(d)
+        # test_dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        pred_result = []
+        # for index, data in enumerate(test_dataloader):
+        #     im, cls_label, gt_bbox = data
+        #     im = im.cuda()
+        #     out = model(im, None)[0]
+        #     bboxes_pred = out['boxes']
+        #     labels_pred = out['labels']
+        #     scores_pred = out['scores']
+        #     bboxes_pred = bboxes_pred.tolist()
+        #     # bboxes_pred = [bbox.tolist() for bbox in bboxes_pred]
+        #     for index, bbox in enumerate(bboxes_pred):
+        #         d = {}
+        #         d["image_name"] = image_name
+        #         label = labels_pred[index].cpu().detach().numpy()
+        #         # print(label)
+        #         # print(dataset.greek_nums_index_map)
+        #         label_name = dataset.greek_nums_index_map[str(label)]
+        #         d['label_name'] = label_name
+        #         xmin, ymin, xmax, ymax = bbox[:]
+        #         d['bbox'] = [int(xmin), int(ymin), int(xmax-xmin+1), int(ymax-ymin+1)]
+        #         score = scores_pred[index].cpu().detach().numpy()
+        #         d['confidence'] = score
+        #         pred_result.append(d)
+        im = Image.open(image_path)
+        im = dataset.transforms(im)
+        im = im.unsqueeze(0)
+        im = im.cuda()
+
+        out = model(im, None)[0]
+        bboxes_pred = out['boxes']
+        labels_pred = out['labels']
+        scores_pred = out['scores']
+        bboxes_pred = bboxes_pred.tolist()
+        for index, bbox in enumerate(bboxes_pred):
+            d = {}
+            d["image_name"] = image_name
+            label = labels_pred[index].cpu().detach().numpy()
+            label_name = dataset.greek_nums_index_map[str(label)]
+            d['label_name'] = label_name
+            xmin, ymin, xmax, ymax = bbox[:]
+            d['bbox'] = [int(xmin), int(ymin), int(xmax-xmin+1), int(ymax-ymin+1)]
+            score = scores_pred[index].cpu().detach().numpy()
+            d['confidence'] = score
+            pred_result.append(d)
 
         # 返回bbox格式为 [xmin, ymin, width, height]
         # pred_result = [{"image_name": image_name, "label_name": 'I', "bbox": [735, 923, 35, 75], "confidence": 0.2},
@@ -67,3 +89,4 @@ class Prediction(FlyAI):
 if __name__ == '__main__':
     prediction = Prediction()
     prediction.predict('')
+
