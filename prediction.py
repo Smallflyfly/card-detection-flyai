@@ -15,7 +15,7 @@ class Prediction(FlyAI):
         '''
         模型初始化，必须在此方法中加载模型
         '''
-        model = fasterRCNN(num_classes=25)
+        model = fasterRCNN(num_classes=25, box_score_thresh=0.5)
         load_pretrained_weights(model, './last.pth')
         return model
 

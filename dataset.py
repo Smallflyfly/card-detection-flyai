@@ -14,7 +14,6 @@ from torchvision import transforms
 import numpy as np
 
 from path import DATA_PATH
-from utils.utils import show_image
 
 
 class CarDataset(Dataset):
@@ -88,7 +87,6 @@ class CarDataset(Dataset):
         new_h = int(h * im_scale)
         new_im = np.zeros((640, 640, 3)).astype(int)
         im_resize = im.resize((new_w, new_h), Image.ANTIALIAS)
-        # print(new_w, new_h)
         assert new_w != 640 or new_h != 640
         new_im[:new_h, :new_w, :] = np.asarray(im_resize)[:, :, :]
         new_im = Image.fromarray(np.uint8(new_im))
@@ -103,17 +101,16 @@ class CarDataset(Dataset):
         # 随机水平翻转
         flip = random.randint(0, 1)
         if flip == 1:
-            new_im = np.asarray(new_w)[:, ::-1, :]
+            new_im = np.asarray(new_im)[:, ::-1, :]
             new_im = Image.fromarray(np.uint8(new_im))
             new_flip_bboxes = []
             for bboxes in new_bboxes:
-                bboxes = [640.0 - b for b in bboxes]
+                xmin, xmax, ymin, ymax = 640.0 - bboxes[2], 640.0 - bboxes[0], bboxes[1], bboxes[3]
+                bboxes = [xmin, ymin, xmax, ymax]
                 new_flip_bboxes.append(bboxes)
             new_bboxes = new_flip_bboxes
-        show_image(new_im, new_bboxes)
-        fang[-1]
+        # show_image(new_im, new_bboxes)
         im = self.transforms(new_im)
-        # print(im.size())
         return im, class_label, new_bboxes
 
     def __len__(self):
