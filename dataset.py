@@ -5,6 +5,7 @@
 @time: 2021/01/04
 """
 import os
+import random
 
 import pandas
 from PIL import Image
@@ -99,6 +100,18 @@ class CarDataset(Dataset):
         # show_image(new_im, new_bboxes)
         # new_im.show()
         # fang[-1]
+        # 随机水平翻转
+        flip = random.randint(0, 1)
+        if flip == 1:
+            new_im = np.asarray(new_w)[:, ::-1, :]
+            new_im = Image.fromarray(np.uint8(new_im))
+            new_flip_bboxes = []
+            for bboxes in new_bboxes:
+                bboxes = [640.0 - b for b in bboxes]
+                new_flip_bboxes.append(bboxes)
+            new_bboxes = new_flip_bboxes
+        new_im.show()
+        fang[-1]
         im = self.transforms(new_im)
         # print(im.size())
         return im, class_label, new_bboxes
