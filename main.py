@@ -91,24 +91,23 @@ class Main(FlyAI):
                 loss_box_reg = out['loss_box_reg']
                 loss_objectness = out['loss_objectness']
                 loss_rpn_box_reg = out['loss_rpn_box_reg']
-                loss = 0.5*loss_classifier + 5*loss_box_reg + loss_objectness + 10*loss_rpn_box_reg
+                loss = 0.5 * loss_classifier + 5 * loss_box_reg + loss_objectness + 10 * loss_rpn_box_reg
                 loss.backward()
                 optimizer.step()
                 if index % 10 == 0:
                     print("Epoch: [{}/{}][{}/{}]  Loss: loss_classifier: {:.2f}, "
                           "loss_box_reg: {:.2f}, loss_objectness: {:.2f}, "
                           "loss_rpn_box_reg: {:.2f}, total loss: {:.2f}"
-                          .format(epoch+1, max_epoch, index+1, len(train_loader), loss_classifier,
+                          .format(epoch + 1, max_epoch, index + 1, len(train_loader), loss_classifier,
                                   loss_box_reg, loss_objectness, loss_rpn_box_reg, loss))
                     # n_iter = epoch*len(train_loader) + index
                     # writer.add_scalar('loss', loss, n_iter)
             scheduler.step()
-
-        torch.save(model, 'last.pth')
+            if (epoch + 1) % 100 == 0:
+                torch.save(model.state_dict(), 'last.pth')
 
 
 if __name__ == '__main__':
     main = Main()
     main.download_data()
     main.train()
-

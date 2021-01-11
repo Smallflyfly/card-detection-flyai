@@ -45,7 +45,7 @@ class CarDataset(Dataset):
             'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII', 'XXVIII', 'XXIX', 'XXX'
         ]
         for i, num in enumerate(greek_nums):
-            self.greek_nums_map[num] = i
+            self.greek_nums_map[num] = i+1
 
     def _process_data(self):
         images = os.listdir(self.image_path)

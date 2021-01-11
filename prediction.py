@@ -16,7 +16,7 @@ class Prediction(FlyAI):
         模型初始化，必须在此方法中加载模型
         '''
         model = fasterRCNN(num_classes=25)
-        load_pretrained_weights(model, 'last.pt')
+        load_pretrained_weights(model, './last.pth')
         return model
 
     def predict(self, image_path):
@@ -35,7 +35,7 @@ class Prediction(FlyAI):
         for index, data in enumerate(test_dataloader):
             im, cls_label, gt_bbox = data
             im = im.cuda()
-            out = model(im, [])
+            out = model(im, None)
             print(out)
             print(cls_label)
             print(gt_bbox)
@@ -50,3 +50,4 @@ class Prediction(FlyAI):
 
 if __name__ == '__main__':
     prediction = Prediction()
+    prediction.predict('')

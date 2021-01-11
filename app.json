@@ -18,7 +18,7 @@
         {
           "name":"label", 
           "type":"string", 
-          "sample": "[{\"image_name\": image_name, \"label_name\": \"I\", \"bbox\": [735, 923, 35, 75], \"confidence\": 0.2}]"
+          "sample":"[{\"image_name\": image_name, \"label_name\": \"I\", \"bbox\": [735, 923, 35, 75], \"confidence\": 0.2}]"
         }
       ]
     }
