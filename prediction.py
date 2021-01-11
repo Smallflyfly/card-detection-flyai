@@ -36,10 +36,23 @@ class Prediction(FlyAI):
             im, cls_label, gt_bbox = data
             im = im.cuda()
             out = model(im, None)
-            print(out)
-            print(cls_label)
-            print(gt_bbox)
-            fang[-1]
+            bboxes_pred = out['boxes']
+            labels_pred = out['labels']
+            scores_pred = out['scores']
+            bboxes_pred = bboxes_pred.toList()
+            bboxes_pred = [bbox.toList() for bbox in bboxes_pred]
+            pred_result = []
+            for index, bbox in enumerate(bboxes_pred):
+                d = {}
+                d["image_name"] = image_name
+                label = labels_pred[index].cpu().detach().numpy()[0]
+                label_name = dataset.greek_nums_index_map[label]
+                d['label_name'] = label_name
+                xmin, ymin, xmax, ymax = bbox[:]
+                d['bbox'] = [int(xmin), int(ymin), int(xmax-xmin+1), int(ymax-ymin+1)]
+                score = scores_pred.cpu().detach().numpy()[0]
+                d['confidence'] = score
+                pred_result.append(d)
 
         # 返回bbox格式为 [xmin, ymin, width, height]
         pred_result = [{"image_name": image_name, "label_name": 'I', "bbox": [735, 923, 35, 75], "confidence": 0.2},

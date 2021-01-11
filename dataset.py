@@ -27,14 +27,13 @@ class CarDataset(Dataset):
         self.train_bbox_labels = []
         self.train_labels = []
         self.greek_nums_map = {}
+        self.greek_nums_index_map = {}
         self.train_image_label_map = {}
         self.transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.ColorJitter(brightness=0.5, contrast=0.5, hue=0.5)
         ])
         self.image_size = 640
-
-
         self._generate_greek_nums_map()
         self._process_data()
 
@@ -46,6 +45,7 @@ class CarDataset(Dataset):
         ]
         for i, num in enumerate(greek_nums):
             self.greek_nums_map[num] = i+1
+            self.greek_nums_index_map[i+1] = num
 
     def _process_data(self):
         images = os.listdir(self.image_path)
