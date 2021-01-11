@@ -16,7 +16,7 @@ class Prediction(FlyAI):
         '''
         模型初始化，必须在此方法中加载模型
         '''
-        model = fasterRCNN(num_classes=25, box_score_thresh=0.5)
+        model = fasterRCNN(num_classes=25, box_score_thresh=0.05)
         load_pretrained_weights(model, './last.pth')
         return model
 
@@ -74,7 +74,7 @@ class Prediction(FlyAI):
             d['label_name'] = label_name
             xmin, ymin, xmax, ymax = bbox[:]
             d['bbox'] = [int(xmin), int(ymin), int(xmax-xmin+1), int(ymax-ymin+1)]
-            score = scores_pred[index].cpu().detach().numpy()
+            score = scores_pred[index].cpu().detach().numpy().tolist()
             d['confidence'] = score
             pred_result.append(d)
 
@@ -88,5 +88,5 @@ class Prediction(FlyAI):
 
 if __name__ == '__main__':
     prediction = Prediction()
-    prediction.predict('')
-
+    result = prediction.predict('data/input/CardDetection/images/5.jpg')
+    print(result)
